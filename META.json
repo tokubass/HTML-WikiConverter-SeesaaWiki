@@ -1,7 +1,7 @@
 {
    "abstract" : "It's new $module",
    "author" : [
-      "tokubass"
+      "tokubass <tokubass@cpan.org>"
    ],
    "dynamic_config" : 0,
    "generated_by" : "Minilla/v0.5.3, CPAN::Meta::Converter version 2.130880",
@@ -52,5 +52,16 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/tokubass/HTML-WikiConverter-SeesaaWiki/issues"
+      },
+      "homepage" : "https://github.com/tokubass/HTML-WikiConverter-SeesaaWiki",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/tokubass/HTML-WikiConverter-SeesaaWiki.git",
+         "web" : "https://github.com/tokubass/HTML-WikiConverter-SeesaaWiki"
+      }
+   },
    "version" : "0.01"
 }

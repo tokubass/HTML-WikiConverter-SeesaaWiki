@@ -27,6 +27,7 @@ sub rules {
         blockquote => { start => ">", line_format => 'single' },
         pre => { start => '=||', end => "||=", block => 1 },
         a => { replace=> \&_link },
+        img => { replace => \&_image },
 
         ul => { line_format => 'multi', block => 1 },
         ol => { alias => 'ul' },
@@ -35,6 +36,9 @@ sub rules {
         dt => { start => \&_dt_dd_start, trim => 'leading' },
         dd => { start => \&_dt_dd_start, trim => 'leading' },
 
+        hr => { replace => "\n----\n" },
+        embed => { replace => \&_embed },
+        iframe => { replace => \&_iframe },
 
         table => { block => 1,  },
         tr    => { end => "|\n", line_format => 'single' },
@@ -120,6 +124,56 @@ sub _span_start {
     }
 
     return '';
+}
+
+
+sub _image {
+  my( $self, $node, $rules ) = @_;
+  my $src = $node->attr('src') || '';
+  return '' unless $src;
+
+  my @attr;
+  for my $key  (qw/height width align/) {
+      next unless my $val = $node->attr($key);
+      push @attr, $val;
+  }
+
+  return sprintf("&ref(%s,%s)",$src,join(',',@attr));
+}
+
+sub _embed {
+    my( $self, $node, $rules ) = @_;
+    return '' unless my $src = $node->attr('src');
+
+    my @attr;
+    for my $key  (qw/width height/) {
+        next unless my $val = $node->attr($key);
+        push @attr, $val;
+    }
+
+    if ($src =~ m{^https?://www\.youtube\.com}) {
+        return sprintf("&youtube(%s){%s}", $src, join(',',@attr));
+    }
+    elsif ($src =~ m{^https?://ext\.nicovideo\.jp}) {
+        if ($node->attr('flashvars') =~ /videoId=(sm[0-9]+)/){
+            return sprintf("&nicovideo(http://www.nicovideo.jp/watch/%s){%s}", $1, join(',',@attr));
+        }
+    }
+}
+
+sub _iframe {
+    my( $self, $node, $rules ) = @_;
+
+    my @attr;
+    for my $key  (qw/width height/) {
+        next unless my $val = $node->attr($key);
+        push @attr, $val;
+    }
+
+    return '' unless my $src = $node->attr('src');
+    if ($src =~ m{^https?://ext\.nicovideo\.jp/thumb_mylist/([0-9]+)}) {
+        return sprintf("&nicovideo(http://www.nicovideo.jp/mylist/%d){%s}", $1, join(',',@attr));
+    }
 }
 
 my $_rowspan_num = {};

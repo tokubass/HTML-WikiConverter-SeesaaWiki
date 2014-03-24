@@ -19,4 +19,4 @@ it under the same terms as Perl itself.
 
 # AUTHOR
 
-tokubass
+tokubass <tokubass@cpan.org>
