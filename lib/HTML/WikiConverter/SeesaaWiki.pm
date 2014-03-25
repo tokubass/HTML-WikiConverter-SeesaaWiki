@@ -132,13 +132,12 @@ sub _image {
   my $src = $node->attr('src') || '';
   return '' unless $src;
 
-  my @attr;
-  for my $key  (qw/height width align/) {
-      next unless my $val = $node->attr($key);
-      push @attr, $val;
-  }
+  my $align = $node->attr('align')  || '';
+  my $w     = $node->attr('width')  || '';
+  my $h     = $node->attr('height') || '';
 
-  return sprintf("&ref(%s,%s)",$src,join(',',@attr));
+  my $w_h = $h ? sprintf(",%s,%s",  $w, $h) : '';
+  return sprintf("&ref(%s%s%s)", $src, $w_h, $align ? ",$align": '' );
 }
 
 sub _embed {
