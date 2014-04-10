@@ -6,6 +6,9 @@ use base 'HTML::WikiConverter';
 use List::Util qw/first/;
 
 our $VERSION = "0.01";
+use constant DEBUG => $ENV{WIKI_CONVERTER_DEBUG};
+
+sub rowspan_num { shift->{_rowspan_num} ||= {}  }
 
 sub rules {
     return {
@@ -42,8 +45,8 @@ sub rules {
 
         table => { block => 1,  },
         tr    => { end => "|\n", line_format => 'single' },
-        td    => { start => \&_td_start,  end => ' ' },
-        th    => { start => '|! ', end => ' ' },
+        td    => { start => \&_td_start, end => ' ' },
+        th    => { start => \&_th_start, end => ' ' },
     };
 }
 
@@ -175,24 +178,60 @@ sub _iframe {
     }
 }
 
-my $_rowspan_num = {};
+sub _th_start {
+    my( $self, $node, $subrules ) = @_;
+    my $str = '';
+    $str .= $self->_process_colspan($node) || '';
+    $str .= $self->_process_rowspan($node) || '';
+    return $str . '|! ';
+}
+
 sub _td_start {
     my( $self, $node, $subrules ) = @_;
-    my $colspan = $node->attr('colspan');
-    if ( $colspan ) {
-        return '|>' x ($colspan - 1) . '| ';
+    my $str = '';
+    $str .= $self->_process_colspan($node) || '';
+    $str .= $self->_process_rowspan($node) || '';
+    return $str . '| ';
+}
+
+sub _process_colspan {
+    my ($self, $node) = @_;
+    my $str = '';
+
+    if ( my $colspan = $node->attr('colspan') ) {
+       $str .= '|>' x ($colspan - 1);
+    }
+    return $str;
+}
+
+sub _process_rowspan {
+    my ($self, $node) = @_;
+    my $str = '';
+
+    if ( my $rowspan = $node->attr('rowspan') ) {
+        if (DEBUG) {
+            warn "-------------\n";
+            warn 'rowspan:',$rowspan;
+            warn 'pindex:',$node->pindex;
+            warn "-------------\n";
+        }
+        $self->rowspan_num->{$node->pindex} = $rowspan - 1;
+        return;
     }
 
-    if ( my $rowspan_num = $node->attr('rowspan') ) {
-        $_rowspan_num->{$node->pindex} = $rowspan_num;
-        return '| ';
+    my $pindex = $node->pindex;
+    while ( 1 && $pindex < 1000 ) {
+        if (my $rowspan_num = $self->rowspan_num->{$pindex}) {
+            $rowspan_num -= 1;
+            $self->rowspan_num->{$pindex} = $rowspan_num;
+            $pindex++;
+            $str .= '|^';
+        }else{
+            last;
+        }
     }
 
-    if ( $_rowspan_num->{$node->pindex}-- ) {
-        return '|^| ';
-    }
-
-    return '| ';
+    return $str;
 }
 
 1;
