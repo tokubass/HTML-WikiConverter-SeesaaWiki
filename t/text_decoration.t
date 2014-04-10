@@ -4,10 +4,11 @@ my $wc = HTML::WikiConverter->new(
     dialect => 'SeesaaWiki',
 );
 
+
 is($wc->html2wiki('<span style="font-size:10px;">text</span>'), '&size(10px){text}', '&size(){}');
+is($wc->html2wiki('<span style="font-weight:bold">text</span>'), q/''text''/, 'font-weight');
 is($wc->html2wiki('<span style="color:red;">text</span>'), '&color(red){text}','&color(){}');
 is($wc->html2wiki('<div style="color:red; background-color:blue;">text</div>'), '&color(red,blue){text}','&color(color,background-color){}');
-
 is($wc->html2wiki('<b>bold</b>'), q/''bold''/,'<b>');
 is($wc->html2wiki('<strong>strong</strong>'),q/''strong''/,'<strong>' );
 is($wc->html2wiki('<i>i</i>'), q/'''i'''/, '<i>');

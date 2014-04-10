@@ -12,20 +12,22 @@ sub rowspan_num { shift->{_rowspan_num} ||= {}  }
 
 sub rules {
     return {
-        h3 => { start => '* '   }, # 見出し大
-        h4 => { start => '** '  }, # 見出し中
-        h5 => { start => '*** ' }, # 見出し小
+        h3 => { start => '* '   , end => "\n" }, # 見出し大
+        h4 => { start => '** '  , end => "\n" }, # 見出し中
+        h5 => { start => '*** ' , end => "\n" }, # 見出し小
 
-        span => { start => \&_span_start, end => '}' },
-        div  => { start => \&_div_start, end => '}' },
+        span => { start => \&_span_start, end => \&_span_end },
+        div  => { start => \&_div_start, end => \&_div_end },
         b => { start => q/''/,  end => q/''/ },
         strong => { alias => 'b' },
+        p => { end => "\n" },
         i => { start => q/'''/, end => q/'''/ },
         em => { alias => 'i' },
         del => { start => '%%', end => '%%' },
         u  =>  { start => '%%%', end => '%%%' },
         sup => { start => '&sup(){', end => '}' },
         sub => { start => '__', end => '__' },
+        br  => { replace => "\n" },
 
         blockquote => { start => ">", line_format => 'single' },
         pre => { start => '=||', end => "||=", block => 1 },
@@ -104,12 +106,22 @@ sub _div_start {
     }
 
     # align
-    if ($style_text =~ /text-align: ([^;]+)/) {
+    if ( $style_text && $style_text =~ /text-align: ([^;]+)/) {
         return sprintf("&align(%s){",$1);
     }
 
 
     return '';
+}
+
+sub _div_end {
+    my( $self, $node, $subrules ) = @_;
+    my $style_text =  $node->attr('style');
+    my @font_list =  $node->find_by_tag_name('font');
+    if ( ($style_text && $style_text =~ /text-align: ([^;]+)/) || first { $_->attr('color') } @font_list) {
+        return "}\n";
+    }
+    return "\n";
 }
 
 
@@ -129,6 +141,14 @@ sub _span_start {
     return '';
 }
 
+sub _span_end {
+    my( $self, $node, $subrules ) = @_;
+    my @font_list =  $node->find_by_tag_name('font');
+    if ( first { $_->attr('size') ||  $_->attr('color')} @font_list) { 
+       return '}';
+    }
+    return '';
+}
 
 sub _image {
   my( $self, $node, $rules ) = @_;
