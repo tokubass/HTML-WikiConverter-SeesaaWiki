@@ -87,6 +87,16 @@ sub _link {
     }
 }
 
+sub is_supported_div_style {
+    my ($self, $node) = @_;
+    my $style_text =  $node->attr('style');
+    my @font_list =  $node->find_by_tag_name('font');
+
+    if ( ($style_text && $style_text =~ /text-align: ([^;]+)/) || first { $_->attr('color') } @font_list) {
+        return 1;
+    }
+
+}
 
 sub _div_start {
     my( $self, $node, $subrules ) = @_;
@@ -96,7 +106,7 @@ sub _div_start {
     # 文字色・背景色
     my $font_color_node = first { $_->attr('color') } @font_list;
     if (   $font_color_node
-        && $style_text =~ /background-color: ([^;]+)/
+        && ($style_text && $style_text =~ /background-color: ([^;]+)/)
     ) {
         my $font_background_color = $1;
         return sprintf("&color(%s,%s){",
@@ -116,9 +126,8 @@ sub _div_start {
 
 sub _div_end {
     my( $self, $node, $subrules ) = @_;
-    my $style_text =  $node->attr('style');
-    my @font_list =  $node->find_by_tag_name('font');
-    if ( ($style_text && $style_text =~ /text-align: ([^;]+)/) || first { $_->attr('color') } @font_list) {
+
+    if ( $self->is_supported_div_style($node) ) {
         return "}\n";
     }
     return "\n";
