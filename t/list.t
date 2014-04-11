@@ -102,10 +102,49 @@ EOF
 subtest 'dl' => sub {
     my $input =<<EOF;
 <dl>
-<dt>Wiki dt</dt><dd>Wiki dd</dd>
+<dt>dt</dt><dd>dd</dd>
+<dt>dt2</dt><dd>dd2</dd>
 </dl>
 EOF
-    is($wc->html2wiki($input), ':Wiki dt|Wiki dd', 'dl dt dd');
+    is($wc->html2wiki($input), ":dt|dd\n:dt2|dd2", 'dl dt dd');
+};
+
+# not supported
+subtest 'multi dd' => sub {
+    subtest 'normal' => sub {
+        my $input =<<EOF;
+<dl>
+<dt>dt</dt>
+<dd>dd</dd>
+<dd>dd2</dd>
+</dl>
+EOF
+        is($wc->html2wiki($input), ":dt|dddd2", 'dl dt dd');
+    };
+    subtest 'dd containing dt method' => sub {
+        my $input =<<EOF;
+<dl>
+<dt>dt</dt>
+<dd>dd</dd>
+<dd>dummy_dt2:dd2</dd>
+<dt>dt2</dt>
+<dd>dd2</dd>
+</dl>
+EOF
+        is($wc->html2wiki($input), ":dt|dddummy_dt2:dd2\n:dt2|dd2", 'dl dt dd');
+
+    };
+};
+
+subtest 'empty dd' => sub {
+    my $input =<<EOF;
+<dl>
+<dt>dt</dt>
+<dt>dt2</dt>
+<dd>dd2</dd>
+</dl>
+EOF
+    is($wc->html2wiki($input), ":dt|\n:dt2|dd2", 'dl dt dd');
 };
 
 

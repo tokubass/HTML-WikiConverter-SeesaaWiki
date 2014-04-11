@@ -38,8 +38,8 @@ sub rules {
         ol => { alias => 'ul' },
         li => { start => \&_li_start, trim => 'leading' },
         dl => { alias => 'ul' },
-        dt => { start => \&_dt_dd_start, trim => 'leading' },
-        dd => { start => \&_dt_dd_start, trim => 'leading' },
+        dt => { start => \&_dt_start, end => \&_dt_end, trim => 'leading' },
+        dd => { start => '', end => '', trim => 'leading' },
 
         hr => { replace => "\n----\n" },
         embed => { replace => \&_embed },
@@ -80,12 +80,19 @@ sub _li_start {
   return "\n$prefix";
 }
 
-sub _dt_dd_start {
+sub _dt_start {
   my( $self, $node, $subrules ) = @_;
   my $parent_tag = $node->parent->tag;
-  return ':' if $parent_tag eq 'dl' and $node->tag eq 'dt';
-  return '|' if $parent_tag eq 'dl';
+  # wikiが複数ddに対応していないので、dd内テキストに:があると表示が崩れるため、改行挿入
+  return "\n:" if $parent_tag eq 'dl' and $node->tag eq 'dt';
 }
+
+sub _dt_end {
+  my( $self, $node, $subrules ) = @_;
+  my $parent_tag = $node->parent->tag;
+  return "|" if $parent_tag eq 'dl' and $node->tag eq 'dt';
+}
+
 
 sub _link {
     my ( $self, $node, $subrules ) = @_;
