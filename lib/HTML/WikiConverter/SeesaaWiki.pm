@@ -88,15 +88,28 @@ sub _dt_dd_start {
 }
 
 sub _link {
-    my( $self, $node, $subrules ) = @_;
+    my ( $self, $node, $subrules ) = @_;
     my $url = $node->attr('href') || '';
     my $text = $self->get_elem_contents($node) || '';
     my $target = $node->attr('target');
+    $url = $self->extract_true_link_from_fc2_external_link($url) || $url;
+
+    return '' unless $url;
 
     if ($target && $target eq '_blank') {
         sprintf("[[%s>>%s]]",$text ,$url);
     }else{
         sprintf("[[%s>%s]]",$text ,$url);
+    }
+}
+
+sub extract_true_link_from_fc2_external_link {
+    my ($self, $url) = @_;
+    if ($url =~ m{\A/jump/(.+)}) {
+        my $true_url = $1;
+        $true_url =~ s{%2F}{/}g;
+        $true_url =~ s{http/}{http://};
+        return $true_url;
     }
 }
 
