@@ -27,7 +27,7 @@ sub rules {
         u  =>  { start => '%%%', end => '%%%' },
         sup => { start => '&sup(){', end => '}' },
         sub => { start => '__', end => '__' },
-        br  => { replace => "\n" },
+        br  => { start => \&_br_start, },
 
         blockquote => { start => ">", line_format => 'single' },
         pre => { start => '=||', end => "||=", block => 1 },
@@ -50,6 +50,19 @@ sub rules {
         td    => { start => \&_td_start, end => ' ' },
         th    => { start => \&_th_start, end => ' ' },
     };
+}
+
+sub _br_start {
+  my( $self, $node, $subrules ) = @_;
+
+  # &align(center){...}内等の改行対策
+  my $parent =  $node->parent;
+  if ($parent->tag eq 'div') {
+      if ( $self->is_supported_div_style($parent) ) {
+          return "~~";
+      }
+  }
+  return "\n";
 }
 
 # $node: HTML::Element
