@@ -113,6 +113,14 @@ sub extract_true_link_from_fc2_external_link {
     }
 }
 
+sub is_fc2_folding {
+    my ($self, $node) = @_;
+
+    if (my $class = $node->attr('class') ) {
+        $class eq 'region';
+    }
+}
+
 sub is_supported_div_style {
     my ($self, $node) = @_;
     my $style_text =  $node->attr('style');
@@ -128,6 +136,10 @@ sub _div_start {
     my( $self, $node, $subrules ) = @_;
     my $style_text =  $node->attr('style');
     my @font_list =  $node->find_by_tag_name('font');
+
+    if ($self->is_fc2_folding($node)) {
+        return "[+]";
+    }
 
     # 文字色・背景色
     my $font_color_node = first { $_->attr('color') } @font_list;
@@ -152,6 +164,10 @@ sub _div_start {
 
 sub _div_end {
     my( $self, $node, $subrules ) = @_;
+
+    if ($self->is_fc2_folding($node)) {
+        return "[END]\n";
+    }
 
     if ( $self->is_supported_div_style($node) ) {
         return "}\n";
