@@ -56,14 +56,6 @@ sub rules {
 
 sub _br_start {
   my( $self, $node, $subrules ) = @_;
-
-  # &align(center){...}内等の改行対策
-  my $parent =  $node->parent;
-  if ($parent->tag eq 'div') {
-      if ( $self->is_supported_div_style($parent) ) {
-          return "~~";
-      }
-  }
   return "\n";
 }
 
