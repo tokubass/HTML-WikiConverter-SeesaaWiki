@@ -12,6 +12,8 @@ sub rowspan_num { shift->{_rowspan_num} ||= {}  }
 
 sub rules {
     return {
+        h1 => { alias => 'h3' },
+        h2 => { alias => 'h3' },
         h3 => { start => '* '   , end => "\n" }, # 見出し大
         h4 => { start => '** '  , end => "\n" }, # 見出し中
         h5 => { start => '*** ' , end => "\n" }, # 見出し小
