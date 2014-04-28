@@ -261,8 +261,8 @@ sub _th_start {
 sub _td_start {
     my( $self, $node, $subrules ) = @_;
     my $str = '';
-    $str .= $self->_process_colspan($node) || '';
     $str .= $self->_process_rowspan($node) || '';
+    $str .= $self->_process_colspan($node) || '';
     return $str . '| ';
 }
 

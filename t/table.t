@@ -269,7 +269,33 @@ chomp($answer);
     is($wc->html2wiki($input), $answer);
 };
 
+subtest 'row_and_col' => sub {
+    my $wc = HTML::WikiConverter->new(
+        dialect => 'SeesaaWiki',
+    );
 
+    my $input =<<EOF;
+<table id="content_block_1">
+<tbody><tr>
+<th rowspan="2">a</th>
+<th>b</th>
+<th>c</th>
+<th>d</th>
+</tr>
+<tr>
+<td colspan="2">1</td>
+<td>hoge</td>
+</tr>
+</tbody></table>
+EOF
+    my $answer = <<EOF;
+|! a |! b |! c |! d |
+|^|>| 1 | hoge |
+EOF
+    chomp($answer);
 
+    is($wc->html2wiki($input), $answer);
+
+};
 
 done_testing;
